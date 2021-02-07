@@ -17,30 +17,40 @@ public class PlayLandParticlesAction : StateAction
 	private float _fallStartY = 0f;
 	private float _fallEndY = 0f;
 	private float _maxFallDistance = 4f; //Used to adjust particle emission intensity
-
+	private OutOfBounds _outOfBounds;
 	public override void Awake(StateMachine stateMachine)
 	{
 		_dustController = stateMachine.GetComponent<DustParticlesController>();
+		_outOfBounds = stateMachine.GetComponent<OutOfBounds>();
 		_transform = stateMachine.transform;
 	}
 
 	public override void OnStateEnter()
 	{
 		_fallStartY = _transform.position.y;
+		_outOfBounds.StartCheckFallOut(_fallStartY);
 	}
 
 	public override void OnStateExit()
 	{
 		_fallEndY = _transform.position.y;
 		float dY = Mathf.Abs(_fallStartY - _fallEndY);
-		float fallIntensity = Mathf.InverseLerp(0, _maxFallDistance, dY);
-
-		if (Time.time >= t + _coolDown)
+		_outOfBounds.CheckHeightFall();
+		if (!_outOfBounds.IsOutOfBounds)
 		{
-			_dustController.PlayLandParticles(fallIntensity);
-			t = Time.time;
+			float fallIntensity = Mathf.InverseLerp(0, _maxFallDistance, dY);
+
+			if (Time.time >= t + _coolDown)
+			{
+				_dustController.PlayLandParticles(fallIntensity);
+				t = Time.time;
+			}
+		}
+		else
+		{
+			_outOfBounds.PlayerRespawn();
 		}
 	}
 
-	public override void OnUpdate() { }
+	public override void OnUpdate(){}
 }
