@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using UOP1.StateMachine;
+using System;
 
 public class OutOfBounds : MonoBehaviour
 {
@@ -31,22 +31,21 @@ public class OutOfBounds : MonoBehaviour
 		_respawnList = GameObject.FindGameObjectsWithTag("Respawn").Select(ob => ob.transform).ToList();
 	}
 
-	public void StartCheckFallOut(float fallStartY)
+	public void InitCheckFallOut(float fallStartY)
 	{
 		_fallStartY = fallStartY;
 		IsOutOfBounds = false;
-		StartCoroutine("CheckFallOut");
 	}
+
 	public void PlayerRespawn()
 	{
-
+		Transform newtransform = FindNearPosition();
 		/*
 		 * for avoid disable the character controller
 		 * https://forum.unity.com/threads/does-transform-position-work-on-a-charactercontroller.36149/
 		 * Edit -> Project Settings -> Physics -> check Auto sync Transforms
 		 */
 		_characterController.enabled = false;
-		Transform newtransform = FindNearPosition();
 		transform.position = newtransform.position;
 		transform.rotation = newtransform.rotation;
 		_characterController.enabled = true;
@@ -55,28 +54,16 @@ public class OutOfBounds : MonoBehaviour
 
 	private Transform FindNearPosition()
 	{
-		return (Transform)(_respawnList?.OrderBy(sp => Vector3.Distance(sp.position, transform.position)).First());
+		return (Transform)(_respawnList?.OrderBy(sp => Vector3.Distance(sp.position, transform.position)).First()) ?? throw new Exception("No respawn set.");
 	}
 
-	public void CheckHeightFall()
+	public void CheckFallBounds()
 	{
-		StopCoroutine("CheckFallOut");
-		IsOutOfBounds |= _fallStartY - transform.position.y >= _fallHeightLimit;
-	}
-
-
-	private IEnumerator CheckFallOut()
-	{
-		while (true)
+		IsOutOfBounds = transform.position.y <= _fallOutLimit || _fallStartY - transform.position.y >= _fallHeightLimit;
+		if (IsOutOfBounds)
 		{
-			yield return new WaitForSeconds(timeCheck);
-			IsOutOfBounds = transform.position.y <= _fallOutLimit;
-			if (IsOutOfBounds)
-			{
-				PlayerRespawn();
-			}
+			PlayerRespawn();
 		}
-
 	}
 
 }

@@ -28,14 +28,13 @@ public class PlayLandParticlesAction : StateAction
 	public override void OnStateEnter()
 	{
 		_fallStartY = _transform.position.y;
-		_outOfBounds.StartCheckFallOut(_fallStartY);
+		_outOfBounds.InitCheckFallOut(_fallStartY);
 	}
 
 	public override void OnStateExit()
 	{
 		_fallEndY = _transform.position.y;
 		float dY = Mathf.Abs(_fallStartY - _fallEndY);
-		_outOfBounds.CheckHeightFall();
 		if (!_outOfBounds.IsOutOfBounds)
 		{
 			float fallIntensity = Mathf.InverseLerp(0, _maxFallDistance, dY);
@@ -52,5 +51,10 @@ public class PlayLandParticlesAction : StateAction
 		}
 	}
 
-	public override void OnUpdate(){}
+	public override void OnUpdate(){
+		if (!_outOfBounds.IsOutOfBounds)
+		{
+			_outOfBounds.CheckFallBounds();
+		}
+	}
 }
