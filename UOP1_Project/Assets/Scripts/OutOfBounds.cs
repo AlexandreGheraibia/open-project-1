@@ -9,7 +9,6 @@ public class OutOfBounds : MonoBehaviour
 
 	[SerializeField] private float _fallHeightLimit = 4;
 	[SerializeField] private float _fallOutLimit = -5;
-	[SerializeField] private float timeCheck = 2;
 	private CharacterController _characterController;
 	private List<Transform> _respawnList;
 	private float _fallStartY;
@@ -39,7 +38,7 @@ public class OutOfBounds : MonoBehaviour
 
 	public void PlayerRespawn()
 	{
-		Transform newtransform = FindNearPosition();
+		Transform newtransform = FindClosestPosition();
 		/*
 		 * for avoid disable the character controller
 		 * https://forum.unity.com/threads/does-transform-position-work-on-a-charactercontroller.36149/
@@ -51,8 +50,8 @@ public class OutOfBounds : MonoBehaviour
 		_characterController.enabled = true;
 
 	}
-
-	private Transform FindNearPosition()
+	
+	private Transform FindClosestPosition()
 	{
 		return (Transform)(_respawnList?.OrderBy(sp => Vector3.Distance(sp.position, transform.position)).First()) ?? throw new Exception("No respawn set.");
 	}
